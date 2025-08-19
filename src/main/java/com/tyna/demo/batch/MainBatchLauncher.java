@@ -1,5 +1,7 @@
 package com.tyna.demo.batch;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +15,7 @@ import java.util.Map;
 public class MainBatchLauncher {
 
     private final Map<String, RunnableJob> jobs;
+    private static final Logger log = LoggerFactory.getLogger(MainBatchLauncher.class);
 
     @Autowired
     public MainBatchLauncher(Map<String, RunnableJob> runnableJobMap) {
@@ -23,13 +26,13 @@ public class MainBatchLauncher {
     public CommandLineRunner batchRunner () {
         return args -> {
             LocalDateTime startTime = LocalDateTime.now();
-            System.out.println("==================================================");
-            System.out.println("🚀 BATCH LAUNCHER STARTED");
-            System.out.println("📅 Started at: " + startTime);
-            System.out.println("==================================================");
+            log.info("==================================================");
+            log.info("🚀 BATCH LAUNCHER STARTED");
+            log.info("📅 Started at: " + startTime);
+            log.info("==================================================");
 
             if (args.length == 0) {
-                System.out.println("🚀 No Batch");
+                log.error("🚀 No Batch");
                 return;
             }
 
@@ -37,14 +40,14 @@ public class MainBatchLauncher {
             RunnableJob job = jobs.get(jobName);
 
             if (job == null) {
-                System.out.println("❌ Job '" + jobName + "' not found!");
+                log.error("❌ Job '" + jobName + "' not found!");
                 showAvailableJobs();
                 System.exit(1);
             } else {
                 try {
                     job.executeBatch();
                 } catch (Exception e) {
-                    System.out.println("💥 Job '" + jobName + "' failed: " + e.getMessage());
+                    log.info("💥 Job '" + jobName + "' failed: " + e.getMessage());
                     e.printStackTrace();
                     System.exit(1);
                 }
@@ -52,15 +55,15 @@ public class MainBatchLauncher {
 
             LocalDateTime endTime = LocalDateTime.now();
             long executionTime = Duration.between(startTime, endTime).toMillis();
-            System.out.println("⏱️  Total execution time: " + executionTime + "ms");
-            System.out.println("==================================================");
+            log.info("⏱️  Total execution time: " + executionTime + "ms");
+            log.info("==================================================");
         };
     }
 
     private void showAvailableJobs() {
-        System.out.println("\n📋 Available Jobs:");
+        log.info("\n📋 Available Jobs:");
         jobs.forEach((name, job) -> {
-            System.out.println("  • " + name + " - " + job.getJobName());
+            log.info("  • " + name + " - " + job.getJobName());
         });
     }
 
